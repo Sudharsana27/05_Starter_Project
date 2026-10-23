@@ -1,6 +1,8 @@
+
 .env
-__pycache__/
-*.pyc
 .venv/
+__pycache__/
+*.py[cod]
 *.db
 .pytest_cache/
+alembic/__pycache__/
