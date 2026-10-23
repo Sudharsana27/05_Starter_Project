@@ -1,0 +1,30 @@
+LF-03 - One-Command Data Seeder
+Date: 2026-10-23
+
+Seeder:
+Command: python -m scripts.seed
+Result: SUCCESS
+
+Data verification:
+Business CSV tables loaded: 28
+Employee rows: 745
+Attendance rows: 150155
+CSV row counts matched database counts: PASS
+
+Database checks:
+SQLite integrity_check: ok
+Declared foreign-key violations: 0
+
+Official dataset baseline:
+Command: python C:\Users\sudha\Downloads\verify_ledgerforge.py checks --data C:\GrowMar\03_Data\csv
+Result: 5/5 checks passed
+
+Official checks:
+1. Every journal entry balances: PASS
+2. Payroll equals ledger, every month: PASS
+3. Receivables equal open invoices: PASS
+4. Payroll employees exist: PASS
+5. Nobody is paid after leaving: PASS
+
+Note: Official checks were run on the source CSV dataset, not on a database export.
+Attendance loading under 60 seconds: Not measured (optional level-up).
