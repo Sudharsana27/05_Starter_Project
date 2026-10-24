@@ -1,5 +1,8 @@
 
-from datetime import date
+from datetime import date, datetime
+from decimal import Decimal
+
+from sqlalchemy import Numeric, DateTime, CheckConstraint
 
 from sqlalchemy import (
     Boolean,
@@ -142,3 +145,104 @@ class EmployeeAssignment(Base):
 
 Index("ix_employees_department_id", Employee.department_id)
 Index("ix_employees_manager_id", Employee.manager_id)
+
+
+class SalaryComponent(Base):
+    __tablename__ = "salary_components"
+
+    component_id: Mapped[str] = mapped_column(
+        String(20), primary_key=True
+    )
+    component_name: Mapped[str] = mapped_column(
+        String(100), nullable=False
+    )
+    component_type: Mapped[str] = mapped_column(
+        String(30), nullable=False
+    )
+    taxable: Mapped[str] = mapped_column(
+        String(1), nullable=False
+    )
+    calculation_rule: Mapped[str] = mapped_column(
+        String(200), nullable=False
+    )
+    is_fixed: Mapped[str] = mapped_column(
+        String(1), nullable=False
+    )
+
+
+class SalaryRevision(Base):
+    __tablename__ = "salary_revisions"
+
+    revision_id: Mapped[str] = mapped_column(
+        String(20), primary_key=True
+    )
+    employee_id: Mapped[str] = mapped_column(
+        ForeignKey("employees.employee_id"), nullable=False
+    )
+    effective_from: Mapped[date] = mapped_column(
+        Date, nullable=False, index=True
+    )
+    revision_reason: Mapped[str] = mapped_column(
+        String(100), nullable=False
+    )
+    previous_annual_fixed: Mapped[Decimal | None] = mapped_column(
+        Numeric(14, 2), nullable=True
+    )
+    new_annual_fixed: Mapped[Decimal] = mapped_column(
+        Numeric(14, 2), nullable=False
+    )
+    pct_change: Mapped[Decimal | None] = mapped_column(
+        Numeric(7, 3), nullable=True
+    )
+    role_id_after: Mapped[str] = mapped_column(
+        ForeignKey("roles.role_id"), nullable=False
+    )
+    approved_by: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False
+    )
+
+
+class SalaryStructure(Base):
+    __tablename__ = "salary_structures"
+
+    structure_id: Mapped[str] = mapped_column(
+        String(20), primary_key=True
+    )
+    employee_id: Mapped[str] = mapped_column(
+        ForeignKey("employees.employee_id"), nullable=False
+    )
+    component_id: Mapped[str] = mapped_column(
+        ForeignKey("salary_components.component_id"), nullable=False
+    )
+    component_name: Mapped[str] = mapped_column(
+        String(100), nullable=False
+    )
+    component_type: Mapped[str] = mapped_column(
+        String(30), nullable=False
+    )
+    monthly_amount: Mapped[Decimal] = mapped_column(
+        Numeric(14, 2), nullable=False
+    )
+    effective_from: Mapped[date] = mapped_column(
+        Date, nullable=False
+    )
+    effective_to: Mapped[date | None] = mapped_column(
+        Date, nullable=True
+    )
+    revision_id: Mapped[str] = mapped_column(
+        ForeignKey("salary_revisions.revision_id"), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "effective_to IS NULL OR effective_to >= effective_from",
+            name="ck_salary_structure_date_range",
+        ),
+        Index(
+            "ix_salary_structure_employee_dates",
+            "employee_id", "effective_from", "effective_to",
+        ),
+    )

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from .database import Base, engine
 from .routers import departments, employees
+from .routers import departments, employees, salary
 
 Base.metadata.create_all(engine)
 
@@ -16,3 +17,4 @@ def health():
 
 app.include_router(departments.router)
 app.include_router(employees.router)
+app.include_router(salary.router)
